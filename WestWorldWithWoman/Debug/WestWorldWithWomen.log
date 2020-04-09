@@ -1,7 +1,9 @@
-﻿  main.cpp
-  MinersWifeOwnedStates.cpp
+﻿  MinersWifeOwnedStates.cpp
   MinersWife.cpp
+  MinerOwnedStates.cpp
   Miner.cpp
+  main.cpp
+  BaseGameEntity.cpp
   코드를 생성하고 있습니다...
 BaseGameEntity.obj : warning LNK4075: '/EDITANDCONTINUE'이(가) '/SAFESEH' 사양으로 인해 무시됩니다.
-  WestWorldWithWomen.vcxproj -> C:\Users\USER\Desktop\STUDY\인공지능\VS2010\Buckland_Chapter2-State Machines\WestWorldWithWoman\.\Debug\WestWorldWithWomen.exe
+  WestWorldWithWomen.vcxproj -> C:\Users\USER\Desktop\STUDY\인공지능\VS2010\Buckland_Chapter2-State Machines\FSM\FSM\WestWorldWithWoman\.\Debug\WestWorldWithWomen.exe

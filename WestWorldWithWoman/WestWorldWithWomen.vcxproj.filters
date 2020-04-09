@@ -33,6 +33,12 @@
     <ClCompile Include="MinersWifeOwnedStates.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="Monster.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="MonsterOwnedStates.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="BaseGameEntity.h">
@@ -42,9 +48,6 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="Locations.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="Miner.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="MinerOwnedStates.h">
@@ -60,6 +63,15 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="StateMachine.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Miner.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Monster.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="MonsterOwnedStates.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

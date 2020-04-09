@@ -132,6 +132,8 @@
     <ClCompile Include="MinerOwnedStates.cpp" />
     <ClCompile Include="MinersWife.cpp" />
     <ClCompile Include="MinersWifeOwnedStates.cpp" />
+    <ClCompile Include="Monster.cpp" />
+    <ClCompile Include="MonsterOwnedStates.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="BaseGameEntity.h" />
@@ -141,6 +143,8 @@
     <ClInclude Include="MinerOwnedStates.h" />
     <ClInclude Include="MinersWife.h" />
     <ClInclude Include="MinersWifeOwnedStates.h" />
+    <ClInclude Include="Monster.h" />
+    <ClInclude Include="MonsterOwnedStates.h" />
     <ClInclude Include="State.h" />
     <ClInclude Include="StateMachine.h" />
   </ItemGroup>

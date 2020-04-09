@@ -29,6 +29,8 @@ private:
   
   EnterMineAndDigForNugget(){}
   
+
+
   //copy ctor and assignment should be private
   EnterMineAndDigForNugget(const EnterMineAndDigForNugget&);
   EnterMineAndDigForNugget& operator=(const EnterMineAndDigForNugget&);
@@ -125,9 +127,5 @@ public:
 
   virtual void Exit(Miner* miner);
 };
-
-
-
-
 
 #endif
