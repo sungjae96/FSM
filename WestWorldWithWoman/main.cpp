@@ -1,10 +1,14 @@
 #include <fstream>
+#include <time.h>
+
 #include "Locations.h"
 #include "Miner.h"
 #include "MinersWife.h"
+#include "Monster.h"
+#include "EntityManager.h"
+#include "MessageDispatcher.h"
 #include "misc/ConsoleUtils.h"
 #include "EntityNames.h"
-
 
 
 std::ofstream os;
@@ -16,23 +20,44 @@ int main()
   os.open("output.txt");
 #endif
 
+  //seed random number generator
+  srand((unsigned) time(NULL));
+
   //create a miner
-  Miner Bob(ent_Miner_Bob);
+  Miner* Bob = new Miner(ent_Miner_Bob);
 
   //create his wife
-  MinersWife Elsa(ent_Elsa);
+  MinersWife* Elsa = new MinersWife(ent_Elsa);
+
+  Monster* monster = new Monster(ent_Monster);
+
+
+  //register them with the entity manager
+  EntityMgr->RegisterEntity(Bob);
+  EntityMgr->RegisterEntity(Elsa);
+  EntityMgr->RegisterEntity(monster);
 
   //run Bob and Elsa through a few Update calls
-  for (int i=0; i<20; ++i)
+  for (int i=0; i<30; ++i)
   { 
-    Bob.Update();
-    Elsa.Update();
+    Bob->Update();
+    Elsa->Update();
+	monster->Update();
+
+    //dispatch any delayed messages
+    Dispatch->DispatchDelayedMessages();
 
     Sleep(800);
   }
 
+  //tidy up
+  delete Bob;
+  delete Elsa;
+  delete monster;
+
   //wait for a keypress before exiting
   PressAnyKeyToContinue();
+
 
   return 0;
 }

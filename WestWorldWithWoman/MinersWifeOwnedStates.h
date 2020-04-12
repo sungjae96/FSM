@@ -9,9 +9,11 @@
 //  Author: Mat Buckland 2002 (fup@ai-junkie.com)
 //
 //------------------------------------------------------------------------
-#include "State.h"
+#include "fsm/State.h"
 
 class MinersWife;
+
+
 
 //------------------------------------------------------------------------
 //
@@ -22,13 +24,14 @@ class WifesGlobalState : public State<MinersWife>
 private:
   
   WifesGlobalState(){}
-  
+
   //copy ctor and assignment should be private
   WifesGlobalState(const WifesGlobalState&);
   WifesGlobalState& operator=(const WifesGlobalState&);
  
 public:
 
+  //this is a singleton
   static WifesGlobalState* Instance();
   
   virtual void Enter(MinersWife* wife){}
@@ -36,6 +39,8 @@ public:
   virtual void Execute(MinersWife* wife);
 
   virtual void Exit(MinersWife* wife){}
+
+  virtual bool OnMessage(MinersWife* wife, const Telegram& msg);
 };
 
 
@@ -45,17 +50,17 @@ public:
 //------------------------------------------------------------------------
 class DoHouseWork : public State<MinersWife>
 {
-
 private:
-  
-  DoHouseWork(){}
 
+  DoHouseWork(){}
+  
   //copy ctor and assignment should be private
   DoHouseWork(const DoHouseWork&);
-  DoHouseWork& operator=(const DoHouseWork&); 
-  
+  DoHouseWork& operator=(const DoHouseWork&);
+
 public:
 
+  //this is a singleton
   static DoHouseWork* Instance();
   
   virtual void Enter(MinersWife* wife);
@@ -63,6 +68,8 @@ public:
   virtual void Execute(MinersWife* wife);
 
   virtual void Exit(MinersWife* wife);
+  
+  virtual bool OnMessage(MinersWife* wife, const Telegram& msg);
 
 };
 
@@ -84,6 +91,7 @@ private:
  
 public:
 
+  //this is a singleton
   static VisitBathroom* Instance();
   
   virtual void Enter(MinersWife* wife);
@@ -92,6 +100,64 @@ public:
 
   virtual void Exit(MinersWife* wife);
 
+  virtual bool OnMessage(MinersWife* wife, const Telegram& msg);
+
 };
+
+
+//------------------------------------------------------------------------
+//
+
+//------------------------------------------------------------------------
+class CookStew : public State<MinersWife>
+{
+private:
+  
+  CookStew(){}
+
+  //copy ctor and assignment should be private
+  CookStew(const CookStew&);
+  CookStew& operator=(const CookStew&);
+ 
+public:
+
+  //this is a singleton
+  static CookStew* Instance();
+  
+  virtual void Enter(MinersWife* wife);
+
+  virtual void Execute(MinersWife* wife);
+
+  virtual void Exit(MinersWife* wife);
+
+  virtual bool OnMessage(MinersWife* wife, const Telegram& msg);
+};
+
+//---------------------------------------------------------------------------
+
+class RunAway : public State<MinersWife>
+{
+private:
+
+	RunAway() {}
+
+	//copy ctor and assignment should be private
+	RunAway(const RunAway&);
+	RunAway& operator=(const RunAway&);
+
+public:
+
+	//this is a singleton
+	static RunAway* Instance();
+
+	virtual void Enter(MinersWife* wife);
+
+	virtual void Execute(MinersWife* wife);
+
+	virtual void Exit(MinersWife* wife);
+
+	virtual bool OnMessage(MinersWife* wife, const Telegram& msg);
+};
+
 
 #endif

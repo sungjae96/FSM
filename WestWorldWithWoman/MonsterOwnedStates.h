@@ -1,29 +1,46 @@
 #ifndef MONSTER_OWNED_STATES_H
 #define MONSTER_OWNED_STATES_H
-
-#include "State.h"
+//------------------------------------------------------------------------
+//
+//  Name:   MinersWifeOwnedStates.h
+//
+//  Desc:   All the states that can be assigned to the MinersWife class
+//
+//  Author: Mat Buckland 2002 (fup@ai-junkie.com)
+//
+//------------------------------------------------------------------------
+#include "fsm/State.h"
 
 class Monster;
 
-class WifesGlobalState : public State<Monster>
+
+
+//------------------------------------------------------------------------
+//
+
+//------------------------------------------------------------------------
+class MonsterGlobalState : public State<Monster>
 {
 private:
 
-	WifesGlobalState() {}
+	MonsterGlobalState() {}
 
 	//copy ctor and assignment should be private
-	WifesGlobalState(const WifesGlobalState&);
-	WifesGlobalState& operator=(const WifesGlobalState&);
+	MonsterGlobalState(const MonsterGlobalState&);
+	MonsterGlobalState& operator=(const MonsterGlobalState&);
 
 public:
 
-	static WifesGlobalState* Instance();
+	//this is a singleton
+	static MonsterGlobalState* Instance();
 
 	virtual void Enter(Monster* monster) {}
 
 	virtual void Execute(Monster* monster);
 
 	virtual void Exit(Monster* monster) {}
+
+	virtual bool OnMessage(Monster* monster, const Telegram& msg);
 };
 
 
@@ -31,26 +48,28 @@ public:
 //
 
 //------------------------------------------------------------------------
-class DoHouseWork : public State<Monster>
+class Searching : public State<Monster>
 {
-
 private:
 
-	DoHouseWork() {}
+	Searching() {}
 
 	//copy ctor and assignment should be private
-	DoHouseWork(const DoHouseWork&);
-	DoHouseWork& operator=(const DoHouseWork&);
+	Searching(const Searching&);
+	Searching& operator=(const Searching&);
 
 public:
 
-	static DoHouseWork* Instance();
+	//this is a singleton
+	static Searching* Instance();
 
 	virtual void Enter(Monster* monster);
 
 	virtual void Execute(Monster* monster);
 
 	virtual void Exit(Monster* monster);
+
+	virtual bool OnMessage(Monster* monster, const Telegram& msg);
 
 };
 
@@ -60,19 +79,20 @@ public:
 //
 
 //------------------------------------------------------------------------
-class VisitBathroom : public State<Monster>
+class TakeASleep : public State<Monster>
 {
 private:
 
-	VisitBathroom() {}
+	TakeASleep() {}
 
 	//copy ctor and assignment should be private
-	VisitBathroom(const VisitBathroom&);
-	VisitBathroom& operator=(const VisitBathroom&);
+	TakeASleep(const TakeASleep&);
+	TakeASleep& operator=(const TakeASleep&);
 
 public:
 
-	static VisitBathroom* Instance();
+	//this is a singleton
+	static TakeASleep* Instance();
 
 	virtual void Enter(Monster* monster);
 
@@ -80,6 +100,66 @@ public:
 
 	virtual void Exit(Monster* monster);
 
+	virtual bool OnMessage(Monster* monster, const Telegram& msg);
+
 };
+
+
+//------------------------------------------------------------------------
+//
+
+//------------------------------------------------------------------------
+class AttackBob : public State<Monster>
+{
+private:
+
+	AttackBob() {}
+
+	//copy ctor and assignment should be private
+	AttackBob(const AttackBob&);
+	AttackBob& operator=(const AttackBob&);
+
+public:
+
+	//this is a singleton
+	static AttackBob* Instance();
+
+	virtual void Enter(Monster* monster);
+
+	virtual void Execute(Monster* monster);
+
+	virtual void Exit(Monster* monster);
+
+	virtual bool OnMessage(Monster* monster, const Telegram& msg);
+};
+
+//------------------------------------------------------------------------
+//
+
+//------------------------------------------------------------------------
+class AttackElsa : public State<Monster>
+{
+private:
+
+	AttackElsa() {}
+
+	//copy ctor and assignment should be private
+	AttackElsa(const AttackElsa&);
+	AttackElsa& operator=(const AttackElsa&);
+
+public:
+
+	//this is a singleton
+	static AttackElsa* Instance();
+
+	virtual void Enter(Monster* monster);
+
+	virtual void Execute(Monster* monster);
+
+	virtual void Exit(Monster* monster);
+
+	virtual bool OnMessage(Monster* monster, const Telegram& msg);
+};
+
 
 #endif

@@ -4,15 +4,18 @@
 //
 //  Name:   MinerOwnedStates.h
 //
-//  Desc:   All the states that can be assigned to the Miner class
+//  Desc:   All the states that can be assigned to the Miner class.
+//          Note that a global state has not been implemented.
 //
 //  Author: Mat Buckland 2002 (fup@ai-junkie.com)
 //
 //------------------------------------------------------------------------
-#include "State.h"
+#include "fsm/State.h"
 
 
 class Miner;
+struct Telegram;
+
 
 
 
@@ -28,8 +31,6 @@ class EnterMineAndDigForNugget : public State<Miner>
 private:
   
   EnterMineAndDigForNugget(){}
-  
-
 
   //copy ctor and assignment should be private
   EnterMineAndDigForNugget(const EnterMineAndDigForNugget&);
@@ -37,15 +38,16 @@ private:
  
 public:
 
+  //this is a singleton
   static EnterMineAndDigForNugget* Instance();
-  
-public:
-  
+
   virtual void Enter(Miner* miner);
 
   virtual void Execute(Miner* miner);
 
   virtual void Exit(Miner* miner);
+
+  virtual bool OnMessage(Miner* agent, const Telegram& msg);
 
 };
 
@@ -67,6 +69,7 @@ private:
  
 public:
 
+  //this is a singleton
   static VisitBankAndDepositGold* Instance();
 
   virtual void Enter(Miner* miner);
@@ -74,6 +77,8 @@ public:
   virtual void Execute(Miner* miner);
 
   virtual void Exit(Miner* miner);
+
+  virtual bool OnMessage(Miner* agent, const Telegram& msg);
 };
 
 
@@ -94,6 +99,7 @@ private:
  
 public:
 
+  //this is a singleton
   static GoHomeAndSleepTilRested* Instance();
 
   virtual void Enter(Miner* miner);
@@ -101,11 +107,16 @@ public:
   virtual void Execute(Miner* miner);
 
   virtual void Exit(Miner* miner);
+
+  virtual bool OnMessage(Miner* agent, const Telegram& msg);
 };
 
 
 //------------------------------------------------------------------------
 //
+//  miner changes location to the saloon and keeps buying Whiskey until
+//  his thirst is quenched. When satisfied he returns to the goldmine
+//  and resumes his quest for nuggets.
 //------------------------------------------------------------------------
 class QuenchThirst : public State<Miner>
 {
@@ -119,6 +130,7 @@ private:
  
 public:
 
+  //this is a singleton
   static QuenchThirst* Instance();
 
   virtual void Enter(Miner* miner);
@@ -126,6 +138,63 @@ public:
   virtual void Execute(Miner* miner);
 
   virtual void Exit(Miner* miner);
+
+  virtual bool OnMessage(Miner* agent, const Telegram& msg);
 };
+
+
+//------------------------------------------------------------------------
+//
+//  this is implemented as a state blip. The miner eats the stew, gives
+//  Elsa some compliments and then returns to his previous state
+//------------------------------------------------------------------------
+class EatStew : public State<Miner>
+{
+private:
+  
+  EatStew(){}
+
+  //copy ctor and assignment should be private
+  EatStew(const EatStew&);
+  EatStew& operator=(const EatStew&);
+ 
+public:
+
+  //this is a singleton
+  static EatStew* Instance();
+
+  virtual void Enter(Miner* miner);
+
+  virtual void Execute(Miner* miner);
+
+  virtual void Exit(Miner* miner);
+
+  virtual bool OnMessage(Miner* agent, const Telegram& msg);
+};
+
+class FightMonster : public State<Miner>
+{
+private:
+
+	FightMonster() {}
+
+	//copy ctor and assignment should be private
+	FightMonster(const FightMonster&);
+	FightMonster& operator=(const FightMonster&);
+
+public:
+
+	//this is a singleton
+	static FightMonster* Instance();
+
+	virtual void Enter(Miner* miner);
+
+	virtual void Execute(Miner* miner);
+
+	virtual void Exit(Miner* miner);
+
+	virtual bool OnMessage(Miner* agent, const Telegram& msg);
+};
+
 
 #endif

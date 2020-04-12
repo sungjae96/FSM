@@ -1,5 +1,10 @@
 #include "Monster.h"
 
+bool Monster::HandleMessage(const Telegram& msg)
+{
+	return m_pStateMachine->HandleMessage(msg);
+}
+
 
 void Monster::Update()
 {
@@ -8,6 +13,3 @@ void Monster::Update()
 
 	m_pStateMachine->Update();
 }
-
-
-

@@ -1,7 +1,11 @@
 #include "MinerOwnedStates.h"
-#include "State.h"
+#include "fsm/State.h"
 #include "Miner.h"
 #include "Locations.h"
+#include "messaging/Telegram.h"
+#include "MessageDispatcher.h"
+#include "MessageTypes.h"
+#include "Time/CrudeTimer.h"
 #include "EntityNames.h"
 
 #include <iostream>
@@ -14,14 +18,15 @@ extern std::ofstream os;
 #define cout os
 #endif
 
-//--------------------------------------methods for EnterMineAndDigForNugget
 
+//------------------------------------------------------------------------methods for EnterMineAndDigForNugget
 EnterMineAndDigForNugget* EnterMineAndDigForNugget::Instance()
 {
   static EnterMineAndDigForNugget instance;
 
   return &instance;
 }
+
 
 void EnterMineAndDigForNugget::Enter(Miner* pMiner)
 {
@@ -38,7 +43,7 @@ void EnterMineAndDigForNugget::Enter(Miner* pMiner)
 
 void EnterMineAndDigForNugget::Execute(Miner* pMiner)
 {  
-  //if the miner is at the goldmine he digs for gold until he
+  //Now the miner is at the goldmine he digs for gold until he
   //is carrying in excess of MaxNuggets. If he gets thirsty during
   //his digging he packs up work for a while and changes state to
   //gp to the saloon for a whiskey.
@@ -68,8 +73,23 @@ void EnterMineAndDigForNugget::Exit(Miner* pMiner)
 }
 
 
+bool EnterMineAndDigForNugget::OnMessage(Miner* pMiner, const Telegram& msg)
+{
+	switch (msg.Msg)
+	{
+	case Msg_BobAttack:
 
-//----------------------------------------methods for VisitBankAndDepositGold
+		SetTextColor(FOREGROUND_RED | FOREGROUND_INTENSITY);
+
+		pMiner->GetFSM()->ChangeState(FightMonster::Instance());
+
+		return true;
+	}//end switch
+  //send msg to global message handler
+  return false;
+}
+
+//------------------------------------------------------------------------methods for VisitBankAndDepositGold
 
 VisitBankAndDepositGold* VisitBankAndDepositGold::Instance()
 {
@@ -114,7 +134,6 @@ void VisitBankAndDepositGold::Execute(Miner* pMiner)
   {
     pMiner->GetFSM()->ChangeState(EnterMineAndDigForNugget::Instance());
   }
-
 }
 
 
@@ -124,7 +143,24 @@ void VisitBankAndDepositGold::Exit(Miner* pMiner)
 }
 
 
-//----------------------------------------methods for GoHomeAndSleepTilRested
+bool VisitBankAndDepositGold::OnMessage(Miner* pMiner, const Telegram& msg)
+{
+
+	switch (msg.Msg)
+	{
+	case Msg_BobAttack:	
+
+		SetTextColor(FOREGROUND_RED | FOREGROUND_INTENSITY);
+
+
+		pMiner->GetFSM()->ChangeState(FightMonster::Instance());
+
+		return true;
+	}//end switch
+  //send msg to global message handler
+  return false;
+}
+//------------------------------------------------------------------------methods for GoHomeAndSleepTilRested
 
 GoHomeAndSleepTilRested* GoHomeAndSleepTilRested::Instance()
 {
@@ -140,6 +176,13 @@ void GoHomeAndSleepTilRested::Enter(Miner* pMiner)
     cout << "\n" << GetNameOfEntity(pMiner->ID()) << ": " << "Walkin' home";
 
     pMiner->ChangeLocation(shack); 
+
+    //let the wife know I'm home
+    Dispatch->DispatchMessage(SEND_MSG_IMMEDIATELY, //time delay
+                              pMiner->ID(),        //ID of sender
+                              ent_Elsa,            //ID of recipient
+                              Msg_HiHoneyImHome,   //the message
+                              NO_ADDITIONAL_INFO);    
   }
 }
 
@@ -149,7 +192,7 @@ void GoHomeAndSleepTilRested::Execute(Miner* pMiner)
   if (!pMiner->Fatigued())
   {
      cout << "\n" << GetNameOfEntity(pMiner->ID()) << ": " 
-          << "What a God darn fantastic nap! Time to find more gold";
+          << "All mah fatigue has drained away. Time to find more gold!";
 
      pMiner->GetFSM()->ChangeState(EnterMineAndDigForNugget::Instance());
   }
@@ -165,13 +208,34 @@ void GoHomeAndSleepTilRested::Execute(Miner* pMiner)
 
 void GoHomeAndSleepTilRested::Exit(Miner* pMiner)
 { 
-  cout << "\n" << GetNameOfEntity(pMiner->ID()) << ": " << "Leaving the house";
 }
 
 
+bool GoHomeAndSleepTilRested::OnMessage(Miner* pMiner, const Telegram& msg)
+{
 
+   switch(msg.Msg)
+   {
+   case Msg_StewReady:
 
-//------------------------------------------------methods for QuenchThirst
+     pMiner->GetFSM()->ChangeState(EatStew::Instance());
+
+	 return true;
+
+	case Msg_BobAttack:
+
+		SetTextColor(FOREGROUND_RED | FOREGROUND_INTENSITY);
+
+	 pMiner->GetFSM()->ChangeState(FightMonster::Instance());
+
+	 return true;
+
+   }//end switch
+
+   return false; //send message to global message handler
+}
+
+//------------------------------------------------------------------------QuenchThirst
 
 QuenchThirst* QuenchThirst::Instance()
 {
@@ -192,23 +256,114 @@ void QuenchThirst::Enter(Miner* pMiner)
 
 void QuenchThirst::Execute(Miner* pMiner)
 {
-   if (pMiner->Thirsty())
-   {
-     pMiner->BuyAndDrinkAWhiskey();
+  pMiner->BuyAndDrinkAWhiskey();
 
-     cout << "\n" << GetNameOfEntity(pMiner->ID()) << ": " << "That's mighty fine sippin' liquer";
+  cout << "\n" << GetNameOfEntity(pMiner->ID()) << ": " << "That's mighty fine sippin' liquer";
 
-     pMiner->GetFSM()->ChangeState(EnterMineAndDigForNugget::Instance());
-   }
-
-  else 
-  {
-    cout << "\nERROR!\nERROR!\nERROR!";
-  }  
+  pMiner->GetFSM()->ChangeState(EnterMineAndDigForNugget::Instance());  
 }
+
 
 void QuenchThirst::Exit(Miner* pMiner)
 { 
   cout << "\n" << GetNameOfEntity(pMiner->ID()) << ": " << "Leaving the saloon, feelin' good";
 }
 
+
+bool QuenchThirst::OnMessage(Miner* pMiner, const Telegram& msg)
+{
+	switch (msg.Msg)
+	{
+	case Msg_BobAttack:
+
+		SetTextColor(FOREGROUND_RED | FOREGROUND_INTENSITY);
+
+
+		pMiner->GetFSM()->ChangeState(FightMonster::Instance());
+
+		return true;
+	}//end switch
+
+  //send msg to global message handler
+  return false;
+}
+
+//------------------------------------------------------------------------EatStew
+
+EatStew* EatStew::Instance()
+{
+  static EatStew instance;
+
+  return &instance;
+}
+
+
+void EatStew::Enter(Miner* pMiner)
+{
+  cout << "\n" << GetNameOfEntity(pMiner->ID()) << ": " << "Smells Reaaal goood Elsa!";
+}
+
+void EatStew::Execute(Miner* pMiner)
+{
+  cout << "\n" << GetNameOfEntity(pMiner->ID()) << ": " << "Tastes real good too!";
+
+  pMiner->GetFSM()->RevertToPreviousState();
+}
+
+void EatStew::Exit(Miner* pMiner)
+{ 
+  cout << "\n" << GetNameOfEntity(pMiner->ID()) << ": " << "Thankya li'lle lady. Ah better get back to whatever ah wuz doin'";
+}
+
+
+bool EatStew::OnMessage(Miner* pMiner, const Telegram& msg)
+{
+	switch (msg.Msg)
+	{
+	case Msg_BobAttack:
+
+		SetTextColor(FOREGROUND_RED | FOREGROUND_INTENSITY);
+
+
+		pMiner->GetFSM()->ChangeState(FightMonster::Instance());
+
+		return true;
+	}//end switch
+  //send msg to global message handler
+  return false;
+}
+
+//--------------------------------------------------------------------------------fightmonster
+
+FightMonster* FightMonster::Instance()
+{
+	static FightMonster instance;
+
+	return &instance;
+}
+
+
+void FightMonster::Enter(Miner* pMiner)
+{
+	cout << "\n" << GetNameOfEntity(pMiner->ID()) << ": " << "Who is there?";
+	cout << "\n" << GetNameOfEntity(pMiner->ID()) << ": " << "Where are you come from?! Take this! Punch!";
+}
+
+void FightMonster::Execute(Miner* pMiner)
+{
+	cout << "\n" << GetNameOfEntity(pMiner->ID()) << ": " << "Go Away and Don't come back";
+
+	pMiner->GetFSM()->RevertToPreviousState();
+}
+
+void FightMonster::Exit(Miner* pMiner)
+{
+	
+}
+
+
+bool FightMonster::OnMessage(Miner* pMiner, const Telegram& msg)
+{
+	//send msg to global message handler
+	return false;
+}

@@ -1,6 +1,11 @@
+#include "MinersWifeOwnedStates.h"
+#include "MinerOwnedStates.h"
 #include "MonsterOwnedStates.h"
 #include "Monster.h"
 #include "Locations.h"
+#include "Time/CrudeTimer.h"
+#include "MessageDispatcher.h"
+#include "MessageTypes.h"
 #include "EntityNames.h"
 
 #include <iostream>
@@ -13,91 +18,276 @@ extern std::ofstream os;
 #endif
 
 //-----------------------------------------------------------------------Global state
-WifesGlobalState* WifesGlobalState::Instance()
+
+MonsterGlobalState* MonsterGlobalState::Instance()
 {
-	static WifesGlobalState instance;
+	static MonsterGlobalState instance;
 
 	return &instance;
 }
 
 
-void WifesGlobalState::Execute(Monster* monster)
+void MonsterGlobalState::Execute(Monster* monster)
 {
-	//1 in 10 chance of needing the bathroom
-	if (RandFloat() < 0.1)
-	{
-		monster->GetFSM()->ChangeState(VisitBathroom::Instance());
-	}
+	////1 in 10 chance of needing the bathroom (provided she is not already
+	////in the bathroom)
+	//if ((RandFloat() < 0.1) &&
+	//	!monster->GetFSM()->isInState(*VisitBathroom::Instance()))
+	//{
+	//	monster->GetFSM()->ChangeState(VisitBathroom::Instance());
+	//}
 }
 
-//---------------------------------------DoHouseWork
-
-DoHouseWork* DoHouseWork::Instance()
+bool MonsterGlobalState::OnMessage(Monster* monster, const Telegram& msg)
 {
-	static DoHouseWork instance;
+	//SetTextColor(BACKGROUND_RED | FOREGROUND_RED | FOREGROUND_GREEN | FOREGROUND_BLUE);
+
+	//switch (msg.Msg)
+	//{
+	//case Msg_HiHoneyImHome:
+	//{
+	//	cout << "\nMessage handled by " << GetNameOfEntity(monster->ID()) << " at time: "
+	//		<< Clock->GetCurrentTime();
+
+	//	SetTextColor(FOREGROUND_GREEN | FOREGROUND_INTENSITY);
+
+	//	cout << "\n" << GetNameOfEntity(monster->ID()) <<
+	//		": Hi honey. Let me make you some of mah fine country stew";
+
+	//	monster->GetFSM()->ChangeState(AttackBob::Instance());
+	//}
+
+	//return true;
+
+	//}//end switch
+
+	return false;
+}
+
+//-------------------------------------------------------------------------DoHouseWork
+
+Searching* Searching::Instance()
+{
+	static Searching instance;
 
 	return &instance;
 }
 
 
-void DoHouseWork::Enter(Monster* monster)
+void Searching::Enter(Monster* monster)
 {
+	cout << "\n" << GetNameOfEntity(monster->ID()) << ": Time to Search my food!";
 }
 
 
-void DoHouseWork::Execute(Monster* monster)
+void Searching::Execute(Monster* monster)
 {
 	switch (RandInt(0, 2))
 	{
 	case 0:
 
-		cout << "\n" << GetNameOfEntity(monster->ID()) << ": Moppin' the floor";
+		cout << "\n" << GetNameOfEntity(monster->ID()) << ": Nothing Found and Get Tired";
+
+		monster->GetFSM()->ChangeState(TakeASleep::Instance());
 
 		break;
 
 	case 1:
 
-		cout << "\n" << GetNameOfEntity(monster->ID()) << ": Washin' the dishes";
+		cout << "\n" << GetNameOfEntity(monster->ID()) << ": Found Bob";
+
+		monster->GetFSM()->ChangeState(AttackBob::Instance());
 
 		break;
 
 	case 2:
 
-		cout << "\n" << GetNameOfEntity(monster->ID()) << ": Makin' the bed";
+		cout << "\n" << GetNameOfEntity(monster->ID()) << ": Found Elsa";
+
+		monster->GetFSM()->ChangeState(AttackElsa::Instance());
+
 
 		break;
 	}
 }
 
-void DoHouseWork::Exit(Monster* monster)
+void Searching::Exit(Monster* monster)
 {
 }
 
-
+bool Searching::OnMessage(Monster* monster, const Telegram& msg)
+{
+	return false;
+}
 
 //------------------------------------------------------------------------VisitBathroom
-VisitBathroom* VisitBathroom::Instance()
+
+TakeASleep* TakeASleep::Instance()
 {
-	static VisitBathroom instance;
+	static TakeASleep instance;
 
 	return &instance;
 }
 
 
-void VisitBathroom::Enter(Monster* monster)
+void TakeASleep::Enter(Monster* monster)
 {
-	cout << "\n" << GetNameOfEntity(monster->ID()) << ": Walkin' to the can. Need to powda mah pretty li'lle nose";
+	cout << "\n" << GetNameOfEntity(monster->ID()) << ": I Should take a sleep";
 }
 
 
-void VisitBathroom::Execute(Monster* monster)
+void TakeASleep::Execute(Monster* monster)
 {
-	cout << "\n" << GetNameOfEntity(monster->ID()) << ": Ahhhhhh! Sweet relief!";
+	cout << "\n" << GetNameOfEntity(monster->ID()) << ": Zzz";
 
 	monster->GetFSM()->RevertToPreviousState();
 }
 
-void VisitBathroom::Exit(Monster* monster)
+void TakeASleep::Exit(Monster* monster)
 {
-	cout << "\n" << GetNameOfEntity(monster  ->ID()) << ": Leavin' the Jon";
+}
+
+
+bool TakeASleep::OnMessage(Monster* monster, const Telegram& msg)
+{
+	return false;
+}
+
+
+//------------------------------------------------------------------------AttackBob
+
+AttackBob* AttackBob::Instance()
+{
+	static AttackBob instance;
+
+	return &instance;
+}
+
+
+void AttackBob::Enter(Monster* monster)
+{
+	//if not already cooking put the stew in the oven
+	if (!monster->found())
+	{
+		cout << "\n" << GetNameOfEntity(monster->ID()) << ": I should wait for my chance!";
+
+		//send a delayed message myself so that I know when to take the stew
+		//out of the oven
+		Dispatch->DispatchMessage(1.5,                  //time delay
+			monster->ID(),           //sender ID
+			monster->ID(),           //receiver ID
+			Msg_BobAttack,        //msg
+			NO_ADDITIONAL_INFO);
+
+		monster->Setfound(true);
+	}
+}
+
+
+void AttackBob::Execute(Monster* monster)
+{
+	cout << "\n" << GetNameOfEntity(monster->ID()) << ": Waiting";
+}
+
+void AttackBob::Exit(Monster* monster)
+{
+	SetTextColor(FOREGROUND_BLUE | FOREGROUND_INTENSITY);
+
+	cout << "\n" << GetNameOfEntity(monster->ID()) << ": Arr! I'll be back";
+}
+
+
+bool AttackBob::OnMessage(Monster* monster, const Telegram& msg)
+{
+	switch (msg.Msg)
+	{
+	case Msg_BobAttack:
+	{
+
+		//let hubby know the stew is ready
+		Dispatch->DispatchMessage(SEND_MSG_IMMEDIATELY,
+			monster->ID(),
+			ent_Miner_Bob,
+			Msg_BobAttack,
+			NO_ADDITIONAL_INFO);
+
+		monster->Setfound(false);
+
+		monster->GetFSM()->ChangeState(Searching::Instance());
+	}
+
+	return true;
+
+	}//end switch
+
+	return false;
+}
+
+//------------------------------------------------------------------------------attackelsa
+
+AttackElsa* AttackElsa::Instance()
+{
+	static AttackElsa instance;
+
+	return &instance;
+}
+
+
+void AttackElsa::Enter(Monster* monster)
+{
+	//if not already cooking put the stew in the oven
+	if (!monster->found())
+	{
+		cout << "\n" << GetNameOfEntity(monster->ID()) << ": I should wait for my chance!";
+
+		//send a delayed message myself so that I know when to take the stew
+		//out of the oven
+		Dispatch->DispatchMessage(1.5,                  //time delay
+			monster->ID(),           //sender ID
+			monster->ID(),           //receiver ID
+			Msg_ElsaAttack,        //msg
+			NO_ADDITIONAL_INFO);
+
+		monster->Setfound(true);
+	}
+}
+
+
+void AttackElsa::Execute(Monster* monster)
+{
+	cout << "\n" << GetNameOfEntity(monster->ID()) << ": Waiting";
+}
+
+void AttackElsa::Exit(Monster* monster)
+{
+	SetTextColor(FOREGROUND_BLUE | FOREGROUND_INTENSITY);
+
+	cout << "\n" << GetNameOfEntity(monster->ID()) << ": Arr! She runs so fast";
+}
+
+
+bool AttackElsa::OnMessage(Monster* monster, const Telegram& msg)
+{
+	switch (msg.Msg)
+	{
+	case Msg_ElsaAttack:
+	{
+
+		//let hubby know the stew is ready
+		Dispatch->DispatchMessage(SEND_MSG_IMMEDIATELY,
+			monster->ID(),
+			ent_Elsa,
+			Msg_ElsaAttack,
+			NO_ADDITIONAL_INFO);
+
+		monster->Setfound(false);
+
+		monster->GetFSM()->ChangeState(Searching::Instance());
+	}
+
+	return true;
+
+	}//end switch
+
+	return false;
 }
